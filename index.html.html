@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0A0A0C">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="My Shoot">
+<title>My Shoot</title>
+<style>
+:root{color-scheme:dark;--bg:#0A0A0C;--fg:#FF8A3D;--soft:#FFB57A;--muted:#C77C45;--card:#16161B;--court:#1C1C22;--accent:#FF5A1F;--line:#2E2E36;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+*{box-sizing:border-box}
+html{scroll-padding-top:env(safe-area-inset-top,0px);background:var(--bg)}
+body{margin:0;background:var(--bg);color:var(--fg);font:17px/1.55 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+main{max-width:720px;margin:0 auto;padding:0 20px 48px}
+.hero{background:var(--court);color:var(--fg);margin:0 -20px;padding:40px 20px 36px;position:relative;overflow:hidden}
+.hero::after{content:"";position:absolute;right:-70px;bottom:-70px;width:220px;height:220px;border:4px solid rgba(255,138,61,.3);border-radius:50%}
+.hero h1{margin:0 0 8px;font-size:clamp(2rem,8vw,3rem);line-height:1.05;font-weight:800;letter-spacing:-.02em}
+.hero p{margin:0 0 24px;max-width:36ch;color:var(--soft)}
+.score{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap}
+.pct{font-size:clamp(3.5rem,18vw,6rem);font-weight:800;line-height:1;color:var(--fg)}
+.count{font-size:1.2rem;color:var(--soft)}
+.btns{display:flex;gap:10px;margin-top:20px;flex-wrap:wrap;position:relative;z-index:1}
+button{font:inherit;font-weight:700;border:2px solid var(--fg);border-radius:10px;padding:12px 18px;cursor:pointer;min-height:44px;background:transparent;color:var(--fg)}
+button:focus-visible{outline:3px solid var(--soft);outline-offset:2px}
+.hit{background:var(--accent);border-color:var(--accent);color:#0A0A0C}
+.miss{background:transparent;color:var(--fg)}
+.reset{border-color:rgba(255,138,61,.5);color:var(--soft)}
+.msg{min-height:1.6em;margin-top:14px;font-weight:600;color:var(--soft)}
+h2{font-size:1.4rem;margin:36px 0 6px;color:var(--fg)}
+.sub{margin:0 0 16px;color:var(--muted)}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:8px}
+.stat{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 10px;text-align:center}
+.stat strong{display:block;font-size:1.8rem;line-height:1.1;color:var(--fg)}
+.stat span{display:block;font-size:.85rem;color:var(--muted)}
+.week{list-style:none;margin:0;padding:0;border-top:1px solid var(--line)}
+.week li{display:grid;grid-template-columns:5.5rem 1fr;gap:12px;padding:12px 0;border-bottom:1px solid var(--line)}
+.week b{color:var(--soft)}
+.hist li{grid-template-columns:9rem 1fr}
+.empty{display:block!important;color:var(--muted)}
+.note{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px;margin-top:28px;color:var(--soft)}
+.log{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:8px}
+.log label{display:block;font-size:.9rem;color:var(--muted)}
+.log .wide,.log button{grid-column:1/-1}
+.log input,.log select{display:block;width:100%;margin-top:4px;font:inherit;color:var(--fg);background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 12px;min-height:44px}
+.log input:focus-visible,.log select:focus-visible{outline:2px solid var(--soft);outline-offset:2px}
+.tl li{grid-template-columns:4rem 1fr auto;align-items:center}
+.tl small{display:block;color:var(--muted)}
+.del{min-height:36px;padding:4px 12px;font-size:.85rem;font-weight:600;border-color:rgba(255,138,61,.5);color:var(--soft)}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:22px;position:relative;z-index:1}
+.chip{min-height:38px;padding:6px 14px;font-size:.9rem;border-radius:999px;border-width:1px}
+.chip.on{background:var(--fg);color:#0A0A0C}
+.seltxt{margin-top:10px;color:var(--soft);position:relative;z-index:1}
+.streak{display:flex;align-items:center;gap:16px;margin-top:20px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px}
+.streak strong{font-size:3rem;line-height:1;color:var(--accent)}
+.streak span{display:block;font-weight:700}
+.streak small{display:block;color:var(--muted)}
+.bar{display:block;height:4px;background:var(--line);border-radius:4px;margin-top:6px}
+.bar i{display:block;height:100%;background:var(--accent);border-radius:4px}
+.app{margin-top:28px;color:var(--soft)}
+.app summary{cursor:pointer;font-weight:700}
+.app p{color:var(--muted);margin:10px 0 0}
+</style>
+</head>
+<body>
+<main>
+<section class="hero">
+<h1>My Shoot</h1>
+<p>Elige desde dónde tiras, cuenta cada tiro y mira cómo mejoras cada semana y cada mes.</p>
+<div class="score" aria-live="polite"><span class="pct" id="pct">0%</span><span class="count" id="count">0 de 0 tiros</span></div>
+<div class="chips" id="chips" role="group" aria-label="Posición de tiro"></div>
+<div class="seltxt" id="selt"></div>
+<div class="btns">
+<button class="hit" id="hit">Anotado</button>
+<button class="miss" id="miss">Fallado</button>
+<button class="reset" id="reset">Borrar hoy</button>
+</div>
+<div class="msg" id="msg">Lanza y pulsa un botón después de cada tiro.</div>
+</section>
+<div class="streak"><strong id="stk">0</strong><div><span id="stkt">días seguidos</span><small id="stkb"></small><small id="stkm"></small></div></div>
+
+<h2>Mis resultados</h2>
+<p class="sub">Se guardan solos en este dispositivo.</p>
+<div class="stats">
+<div class="stat"><strong id="sd">0%</strong><span>Hoy</span><span id="sdc">0 de 0</span></div>
+<div class="stat"><strong id="sw">0%</strong><span>Esta semana</span><span id="swc">0 de 0</span></div>
+<div class="stat"><strong id="sm">0%</strong><span>Este mes</span><span id="smc">0 de 0</span></div>
+</div>
+<h2>Mis posiciones</h2>
+<p class="sub">Este mes, desde cada punto de la pista.</p>
+<ul class="week hist" id="poslist"></ul>
+<h2>Semanas anteriores</h2>
+<ul class="week hist" id="weeks"></ul>
+<h2>Meses anteriores</h2>
+<ul class="week hist" id="months"></ul>
+
+<h2>Mis entrenamientos</h2>
+<p class="sub">Apunta lo que haces cada día. Se guarda en este dispositivo.</p>
+<div class="log">
+<label>Tipo<select id="ttype"><option>Tiro libre</option><option>Manejo de balón</option><option>Físico</option><option>Entradas y tiro en movimiento</option><option>Partido</option><option>Otro</option></select></label>
+<label>Minutos<input id="tmin" type="number" inputmode="numeric" min="1" max="600" value="30"></label>
+<label class="wide">Nota (opcional)<input id="tnote" type="text" maxlength="80" placeholder="Cómo te sentiste, qué mejorar"></label>
+<button class="hit" id="tsave">Guardar entrenamiento</button>
+</div>
+<p class="sub" id="tsum" style="margin-top:16px"></p>
+<ul class="week hist tl" id="tlist"></ul>
+
+<h2>Mi semana de entrenamiento</h2>
+<p class="sub">Cambia lo que quieras. Lo importante es que sea siempre igual.</p>
+<ul class="week">
+<li><b>Lunes</b><span>100 tiros libres y 20 minutos de manejo de balón</span></li>
+<li><b>Martes</b><span>Físico: sentadillas, flexiones y saltos</span></li>
+<li><b>Miércoles</b><span>Tiro en movimiento y entradas a canasta</span></li>
+<li><b>Jueves</b><span>Descanso activo: estiramientos y paseo</span></li>
+<li><b>Viernes</b><span>Partido con amigos</span></li>
+<li><b>Fin de semana</b><span>Dormir bien y ver un partido para aprender</span></li>
+</ul>
+
+<p class="note">Reto de esta semana: sube tu porcentaje de tiros libres cinco puntos. Apúntalo cada día.</p>
+<details class="app"><summary>Tenerla como app en el móvil</summary>
+<p><b>iPhone:</b> ábrela en Safari, pulsa Compartir y elige "Añadir a pantalla de inicio".</p>
+<p><b>Android:</b> ábrela en Chrome, pulsa el menú de tres puntos y elige "Añadir a pantalla de inicio" o "Instalar aplicación".</p>
+</details>
+</main>
+<script>
+(function(){
+var key="my-shoot-v1",pkey="my-shoot-pos",data={},sel="libre";
+var POS=[["libre","Tiro libre"],["ce1","Esquina izquierda"],["al1","Ala izquierda"],["fr","Triple frontal"],["al2","Ala derecha"],["ce2","Esquina derecha"],["med","Media distancia"],["aro","Bajo el aro"]];
+try{data=JSON.parse(localStorage.getItem(key)||"{}")||{}}catch(e){data={}}
+try{sel=localStorage.getItem(pkey)||"libre"}catch(e){}
+if(!POS.some(function(p){return p[0]===sel}))sel="libre";
+var MES=["enero","febrero","marzo","abril","mayo","junio","julio","agosto","septiembre","octubre","noviembre","diciembre"];
+function pad(n){return n<10?"0"+n:""+n}
+function ds(d){return d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate())}
+function parse(k){var a=k.split("-");return new Date(+a[0],+a[1]-1,+a[2])}
+function monday(d){var m=new Date(d.getFullYear(),d.getMonth(),d.getDate());m.setDate(m.getDate()-((m.getDay()+6)%7));return ds(m)}
+function pc(m,t){return t?Math.round(m/t*100):0}
+function save(){try{localStorage.setItem(key,JSON.stringify(data))}catch(e){}document.dispatchEvent(new Event("mys"))}
+function today(){var k=ds(new Date());if(!data[k])data[k]={made:0,shots:0};return data[k]}
+function slot(t,id){t.pos=t.pos||{};return t.pos[id]||(t.pos[id]={made:0,shots:0})}
+function nm(id){for(var i=0;i<POS.length;i++)if(POS[i][0]===id)return POS[i][1];return id}
+function $(id){return document.getElementById(id)}
+var chips=$("chips");
+POS.forEach(function(p){var b=document.createElement("button");b.className="chip";b.textContent=p[1];b.setAttribute("data-id",p[0]);
+b.onclick=function(){sel=p[0];try{localStorage.setItem(pkey,sel)}catch(e){}render()};chips.appendChild(b)});
+function render(){
+var now=new Date(),tk=ds(now),wk=monday(now),mk=tk.slice(0,7);
+var t=data[tk]||{made:0,shots:0},w={made:0,shots:0},mo={made:0,shots:0},W={},M={},PM={};
+Object.keys(data).forEach(function(k){
+var v=data[k],d=parse(k),w1=monday(d),m1=k.slice(0,7);
+W[w1]=W[w1]||{made:0,shots:0};W[w1].made+=v.made;W[w1].shots+=v.shots;
+M[m1]=M[m1]||{made:0,shots:0};M[m1].made+=v.made;M[m1].shots+=v.shots;
+if(m1===mk&&v.pos)Object.keys(v.pos).forEach(function(id){PM[id]=PM[id]||{made:0,shots:0};PM[id].made+=v.pos[id].made;PM[id].shots+=v.pos[id].shots});
+});
+w=W[wk]||w;mo=M[mk]||mo;
+var p=pc(t.made,t.shots);
+$("pct").textContent=p+"%";
+$("count").textContent=t.made+" de "+t.shots+" tiros hoy";
+var cs=(t.pos&&t.pos[sel])||{made:0,shots:0};
+$("selt").textContent="Tirando desde "+nm(sel).toLowerCase()+": "+cs.made+" de "+cs.shots+" hoy";
+Array.prototype.forEach.call(chips.children,function(b){var on=b.getAttribute("data-id")===sel;b.className=on?"chip on":"chip";b.setAttribute("aria-pressed",on)});
+$("sd").textContent=p+"%";$("sdc").textContent=t.made+" de "+t.shots;
+$("sw").textContent=pc(w.made,w.shots)+"%";$("swc").textContent=w.made+" de "+w.shots;
+$("sm").textContent=pc(mo.made,mo.shots)+"%";$("smc").textContent=mo.made+" de "+mo.shots;
+var msg=$("msg");
+if(!t.shots)msg.textContent="Lanza y pulsa un botón después de cada tiro.";
+else if(p>=80)msg.textContent="Nivel profesional. Mantén la rutina.";
+else if(p>=60)msg.textContent="Muy bien. Sigue repitiendo igual.";
+else if(p>=40)msg.textContent="Vas mejorando. La constancia gana.";
+else msg.textContent="Cada tiro suma. No pares ahora.";
+$("poslist").innerHTML=POS.map(function(x){var v=PM[x[0]]||{made:0,shots:0},q=pc(v.made,v.shots);
+return "<li><b>"+x[1]+"</b><span>"+(v.shots?q+"% · "+v.made+" de "+v.shots+" tiros":"Sin tiros este mes")+'<i class="bar"><i style="width:'+q+'%"></i></i></span></li>'}).join("");
+var wl=Object.keys(W).filter(function(k){return k!==wk}).sort().reverse().slice(0,6);
+$("weeks").innerHTML=wl.length?wl.map(function(k){var d=parse(k),v=W[k];
+return "<li><b>Semana del "+pad(d.getDate())+"/"+pad(d.getMonth()+1)+"</b><span>"+pc(v.made,v.shots)+"% · "+v.made+" de "+v.shots+" tiros</span></li>"}).join(""):'<li class="empty">Aquí verás tus semanas cuando termine la actual.</li>';
+var ml=Object.keys(M).filter(function(k){return k!==mk}).sort().reverse().slice(0,6);
+$("months").innerHTML=ml.length?ml.map(function(k){var v=M[k],a=k.split("-");
+return "<li><b>"+MES[+a[1]-1]+" "+a[0]+"</b><span>"+pc(v.made,v.shots)+"% · "+v.made+" de "+v.shots+" tiros</span></li>"}).join(""):'<li class="empty">Aquí verás tus meses cuando termine el actual.</li>';
+}
+$("hit").onclick=function(){var t=today(),c=slot(t,sel);t.made++;t.shots++;c.made++;c.shots++;save();render()};
+$("miss").onclick=function(){var t=today(),c=slot(t,sel);t.shots++;c.shots++;save();render()};
+$("reset").onclick=function(){delete data[ds(new Date())];save();render()};
+render();
+})();
+</script>
+<script>
+(function(){
+var key="my-shoot-trainings-v1",list=[];
+try{list=JSON.parse(localStorage.getItem(key)||"[]")||[]}catch(e){list=[]}
+function $(id){return document.getElementById(id)}
+function pad(n){return n<10?"0"+n:""+n}
+function ds(d){return d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate())}
+function parse(k){var a=k.split("-");return new Date(+a[0],+a[1]-1,+a[2])}
+function monday(d){var m=new Date(d.getFullYear(),d.getMonth(),d.getDate());m.setDate(m.getDate()-((m.getDay()+6)%7));return ds(m)}
+function save(){try{localStorage.setItem(key,JSON.stringify(list))}catch(e){}document.dispatchEvent(new Event("mys"))}
+function render(){
+var wk=monday(new Date()),n=0,mins=0;
+list.forEach(function(t){if(monday(parse(t.date))===wk){n++;mins+=t.min}});
+$("tsum").textContent=n?("Esta semana: "+n+(n===1?" entrenamiento":" entrenamientos")+" · "+mins+" min"):"Esta semana aún no has guardado ningún entrenamiento.";
+var ul=$("tlist");ul.innerHTML="";
+if(!list.length){var e=document.createElement("li");e.className="empty";e.textContent="Aún no has guardado entrenamientos.";ul.appendChild(e);return}
+list.slice().sort(function(a,b){return b.id-a.id}).slice(0,30).forEach(function(t){
+var li=document.createElement("li"),d=parse(t.date);
+var b=document.createElement("b");b.textContent=pad(d.getDate())+"/"+pad(d.getMonth()+1);
+var sp=document.createElement("span");sp.textContent=t.type+" · "+t.min+" min";
+if(t.note){var sm=document.createElement("small");sm.textContent=t.note;sp.appendChild(sm)}
+var bt=document.createElement("button");bt.className="del";bt.textContent="Borrar";
+bt.setAttribute("aria-label","Borrar entrenamiento del "+b.textContent);
+bt.onclick=function(){list=list.filter(function(x){return x.id!==t.id});save();render()};
+li.appendChild(b);li.appendChild(sp);li.appendChild(bt);ul.appendChild(li);
+});
+}
+$("tsave").onclick=function(){
+var m=parseInt($("tmin").value,10);
+if(!m||m<1){$("tmin").focus();return}
+list.push({id:Date.now(),date:ds(new Date()),type:$("ttype").value,min:Math.min(m,600),note:$("tnote").value.trim()});
+$("tnote").value="";save();render();
+};
+render();
+})();
+</script>
+<script>
+(function(){
+function $(id){return document.getElementById(id)}
+function pad(n){return n<10?"0"+n:""+n}
+function ds(d){return d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate())}
+function parse(k){var a=k.split("-");return new Date(+a[0],+a[1]-1,+a[2])}
+function load(k,def){try{return JSON.parse(localStorage.getItem(k)||def)}catch(e){return JSON.parse(def)}}
+function render(){
+var set={},d=load("my-shoot-v1","{}"),tr=load("my-shoot-trainings-v1","[]");
+Object.keys(d||{}).forEach(function(k){if(d[k]&&d[k].shots>0)set[k]=1});
+if(Array.isArray(tr))tr.forEach(function(t){if(t&&t.date)set[t.date]=1});
+var keys=Object.keys(set).sort(),best=0,run=0,prev=null;
+keys.forEach(function(k){if(prev){var n=new Date(prev.getFullYear(),prev.getMonth(),prev.getDate()+1);run=ds(n)===k?run+1:1}else run=1;if(run>best)best=run;prev=parse(k)});
+var c=new Date(),active=!!set[ds(c)];
+if(!active)c.setDate(c.getDate()-1);
+var streak=0;while(set[ds(c)]){streak++;c.setDate(c.getDate()-1)}
+$("stk").textContent=streak;
+$("stkt").textContent=streak===1?"día seguido":"días seguidos";
+$("stkb").textContent="Mejor racha: "+best+(best===1?" día":" días");
+$("stkm").textContent=active?"Hoy ya cuenta. Vuelve mañana para seguir.":(streak?"Entrena hoy para no perder tu racha.":"Lanza unos tiros o guarda un entrenamiento para empezar.");
+}
+document.addEventListener("mys",render);render();
+})();
+</script>
+</body>
+</html>
